@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="1" author="basket">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="cart" schemaName="basket"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="cart" schemaName="basket">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_cart_user" references="auth.users(id)" deleteCascade="true"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="basket">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="cart_items" schemaName="basket"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="cart_items" schemaName="basket">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="cart_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_cart_items_cart" references="basket.cart(id)" deleteCascade="true"/>
+            </column>
+            <column name="product_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_cart_items_product" references="catalog.product(id)" deleteCascade="true"/>
+            </column>
+            <column name="quantity" type="INTEGER">
+                <constraints nullable="false" checkConstraint="quantity > 0"/>
+            </column>
+            <column name="added_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <addUniqueConstraint columnNames="cart_id, product_id"
+                             constraintName="uk_cart_items_cart_product"
+                             tableName="cart_items"
+                             schemaName="basket"/>
+    </changeSet>
+
+
+
+    <changeSet id="3" author="basket">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="orders" schemaName="basket"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="orders" schemaName="basket">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_orders_user" references="auth.users(id)" deleteCascade="true"/>
+            </column>
+            <column name="order_number" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="total_amount" type="INTEGER">
+                <constraints nullable="false" checkConstraint="total_amount >= 0"/>
+            </column>
+            <column name="status" type="VARCHAR(50)" defaultValue="pending">
+                <constraints nullable="false"/>
+            </column>
+            <column name="shipping_address" type="TEXT"/>
+            <column name="billing_address" type="TEXT"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="4" author="basket">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="order_items" schemaName="basket"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="order_items" schemaName="basket">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="order_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_order_items_order" references="basket.orders(id)" deleteCascade="true"/>
+            </column>
+            <column name="product_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_order_items_product" references="catalog.product(id)"/>
+            </column>
+            <column name="quantity" type="INTEGER">
+                <constraints nullable="false" checkConstraint="quantity > 0"/>
+            </column>
+            <column name="unit_price" type="INTEGER">
+                <constraints nullable="false" checkConstraint="unit_price >= 0"/>
+            </column>
+            <column name="total_price" type="INTEGER">
+                <constraints nullable="false" checkConstraint="total_price >= 0"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+
+</databaseChangeLog>
+
